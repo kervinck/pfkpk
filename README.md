@@ -9,6 +9,13 @@ the file `LICENSE' for details.
 This implementation is quite fast because it handles the 64 possible
 black king locations superposition in all operations.
 
+```
+kpkGenerate CPU time [seconds]: 0.001579
+kpkTable size [bytes]: 32768
+kpkSelfCheck: OK
+kpkProbe 24/24: OK
+```
+
 The implementation is agnostic to board geometry.  See the file
 `kpk.h' for instructions on how to adapt to an alternative square
 indexing.
@@ -16,7 +23,7 @@ indexing.
 Distance to conversion (DTC) is not provided, but is trivial to
 add.  Please contact the author if you need advice.
 
-Marcel van Kervinck
+Marcel
 
 ```
 /*

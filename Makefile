@@ -8,7 +8,4 @@ pfkpk: pfkpk.c kpk.c kpk.h
 test:
 	./pfkpk
 
-clean:
-	rm -f *.o
-
 # vi: noexpandtab

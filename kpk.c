@@ -103,7 +103,6 @@ int kpkGenerate(void)
 {
         uint64_t valid[64*32];
 
-        // Prepare won
         for (int ix=0; ix<arrayLen(kpkTable[0]); ix++) {
                 int wK = wKsquare(ix), wP = wPsquare(ix);
 
@@ -115,6 +114,7 @@ int kpkGenerate(void)
                         kpkTable[black][ix] = lost;
                 }
 
+                // Valid positions after black move, pawn capture allowed
                 valid[ix] = ~king64(bit(wK));
                 if (file(wP) != fileA) valid[ix] &= ~bit(wP+N+W);
                 if (file(wP) != fileH) valid[ix] &= ~bit(wP+N+E);
