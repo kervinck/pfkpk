@@ -50,13 +50,13 @@
 enum { N = a2-a1, S = -N, E = b1-a1, W = -E }; // Derived geometry
 
 #define inPawnZone(square) (rank(square)!=rank1 && rank(square)!=rank8)
-#define conflict(wK,wP,bK) (wK==wP || wP==bK || wK==bK)
+#define conflict(wKing,wPawn,bKing) (wKing==wPawn || wPawn==bKing || wKing==bKing)
 
-#define taxi(a,b) (abs(file(a)-file(b)) | abs(rank(a)-rank(b))) // logical-or as max()
-#define wInCheck(wK,wP,bK) (taxi(wK,bK)==1)
-#define bInCheck(wK,wP,bK) (taxi(wK,bK)==1                  \
-                         || (file(wP)!=fileA && wP+N+W==bK) \
-                         || (file(wP)!=fileH && wP+N+E==bK))
+#define dist(a,b) (abs(file(a)-file(b)) | abs(rank(a)-rank(b))) // logical-or as max()
+#define wInCheck(wKing,wPawn,bKing) (dist(wKing,bKing)==1)
+#define bInCheck(wKing,wPawn,bKing) (dist(wKing,bKing)==1                     \
+                                  || (file(wPawn)!=fileA && wPawn+N+W==bKing) \
+                                  || (file(wPawn)!=fileH && wPawn+N+E==bKing))
 
 // Square set macros (no need to adopt these to the specific geometry)
 #define bit(i) (1ULL << (i))
@@ -65,14 +65,14 @@ enum { N = a2-a1, S = -N, E = b1-a1, W = -E }; // Derived geometry
 #define allE(set) ((set) << 8)
 #define allS(set) (((set) & ~mask) >> 1)
 #define allN(set) (((set) << 1) & ~mask)
-#define king64(set) (allW(allN(set)) | allN(set) | allE(allN(set)) \
-                   | allW(set)                   | allE(set)       \
-                   | allW(allS(set)) | allS(set) | allE(allS(set)))
+#define allKing(set) (allW(allN(set)) | allN(set) | allE(allN(set)) \
+                    | allW(set)                   | allE(set)       \
+                    | allW(allS(set)) | allS(set) | allE(allS(set)))
 
 #define arrayLen(a) (sizeof(a) / sizeof((a)[0]))
 enum { white, black };
-#define wKsquare(ix) ((ix)>>5)
-#define wPsquare(ix) square(((ix)>>3)&3, (ix)&7)
+#define wKingSquare(ix) ((ix)>>5)
+#define wPawnSquare(ix) square(((ix)>>3)&3, (ix)&7)
 
 /*----------------------------------------------------------------------+
  |      Data                                                            |
@@ -85,75 +85,75 @@ static const int kingSteps[] = { N+W, N, N+E, W, E, S+W, S, S+E };
  |      Functions                                                       |
  +----------------------------------------------------------------------*/
 
-int kpkProbe(int side, int wK, int wP, int bK)
+int kpkProbe(int side, int wKing, int wPawn, int bKing)
 {
         if (!kpkTable[0][1]) kpkGenerate();
 
-        if (file(wP) >= 4) {
-                wK = square(7 - file(wK), rank(wK));
-                wP = square(7 - file(wP), rank(wP));
-                bK = square(7 - file(bK), rank(bK));
+        if (file(wPawn) >= 4) {
+                wKing = square(7 - file(wKing), rank(wKing));
+                wPawn = square(7 - file(wPawn), rank(wPawn));
+                bKing = square(7 - file(bKing), rank(bKing));
         }
-        int ix = (wK << 5) + (file(wP) << 3) + rank(wP);
-        int bit = (kpkTable[side][ix] >> bK) & 1;
+        int ix = (wKing << 5) + (file(wPawn) << 3) + rank(wPawn);
+        int bit = (kpkTable[side][ix] >> bKing) & 1;
         return (side == white) ? bit : -bit;
 }
 
 int kpkGenerate(void)
 {
-        uint64_t valid[64*32];
+        uint64_t valid[ arrayLen(kpkTable[0]) ];
 
         for (int ix=0; ix<arrayLen(kpkTable[0]); ix++) {
-                int wK = wKsquare(ix), wP = wPsquare(ix);
+                int wKing = wKingSquare(ix), wPawn = wPawnSquare(ix);
 
                 // Positions after winning pawn promotion
-                if (rank(wP) == rank8 && wK != wP) {
-                        uint64_t lost = ~king64(bit(wK)) & ~bit(wK) & ~bit(wP);
-                        if (taxi(wK, wP) > 1)
-                                lost &= ~king64(bit(wP));
+                if (rank(wPawn) == rank8 && wKing != wPawn) {
+                        uint64_t lost = ~allKing(bit(wKing)) & ~bit(wKing) & ~bit(wPawn);
+                        if (dist(wKing, wPawn) > 1)
+                                lost &= ~allKing(bit(wPawn));
                         kpkTable[black][ix] = lost;
                 }
 
                 // Valid positions after black move, pawn capture allowed
-                valid[ix] = ~king64(bit(wK));
-                if (file(wP) != fileA) valid[ix] &= ~bit(wP+N+W);
-                if (file(wP) != fileH) valid[ix] &= ~bit(wP+N+E);
+                valid[ix] = ~allKing(bit(wKing));
+                if (file(wPawn) != fileA) valid[ix] &= ~bit(wPawn+N+W);
+                if (file(wPawn) != fileH) valid[ix] &= ~bit(wPawn+N+E);
         }
 
         int changed;
         do {
                 for (int ix=0; ix<arrayLen(kpkTable[0]); ix++) {
-                        int wK = wKsquare(ix), wP = wPsquare(ix);
-                        if (!inPawnZone(wP))
+                        int wKing = wKingSquare(ix), wPawn = wPawnSquare(ix);
+                        if (!inPawnZone(wPawn))
                                 continue;
 
                         // White king moves
                         uint64_t won = 0;
                         for (int i=0; i<arrayLen(kingSteps); i++) {
-                                int to = wK + kingSteps[i];
+                                int to = wKing + kingSteps[i];
                                 int jx = ix + (kingSteps[i] << 5);
-                                if (taxi(wK, to & 63) == 1 && to != wP)
-                                        won |= kpkTable[black][jx] & ~king64(bit(to));
+                                if (dist(wKing, to & 63) == 1 && to != wPawn)
+                                        won |= kpkTable[black][jx] & ~allKing(bit(to));
                         }
                         // White pawn moves
-                        if (wP+N != wK) {
-                                won |= kpkTable[black][ix+rank2-rank1] & ~bit(wP+N);
-                                if (rank(wP) == rank2 && wP+N+N != wK)
+                        if (wPawn+N != wKing) {
+                                won |= kpkTable[black][ix+rank2-rank1] & ~bit(wPawn+N);
+                                if (rank(wPawn) == rank2 && wPawn+N+N != wKing)
                                         won |= kpkTable[black][ix+rank4-rank2]
-                                            & ~bit(wP+N) & ~bit(wP+N+N);
+                                            & ~bit(wPawn+N) & ~bit(wPawn+N+N);
                         }
-                        kpkTable[white][ix] = won & ~bit(wP);
+                        kpkTable[white][ix] = won & ~bit(wPawn);
                 }
 
                 changed = 0;
                 for (int ix=0; ix<arrayLen(kpkTable[0]); ix++) {
-                        if (!inPawnZone(wPsquare(ix)))
+                        if (!inPawnZone(wPawnSquare(ix)))
                                 continue;
 
                         // Black king moves
                         uint64_t isBad = kpkTable[white][ix] | ~valid[ix];
-                        uint64_t canDraw = king64(~isBad);
-                        uint64_t hasMoves = king64(valid[ix]);
+                        uint64_t canDraw = allKing(~isBad);
+                        uint64_t hasMoves = allKing(valid[ix]);
                         uint64_t lost = hasMoves & ~canDraw;
 
                         changed += (kpkTable[black][ix] != lost);
@@ -171,14 +171,14 @@ int kpkSelfCheck(void)
                 124960 / 2, 97604  / 2  // - Non-draw positions per side
         };
         for (int ix=0; ix<arrayLen(kpkTable[0]); ix++) {
-                int wK = wKsquare(ix), wP = wPsquare(ix);
-                for (int bK=0; bK<boardSize; bK++) {
-                        if (!inPawnZone(wP) || conflict(wK, wP, bK))
+                int wKing = wKingSquare(ix), wPawn = wPawnSquare(ix);
+                for (int bKing=0; bKing<boardSize; bKing++) {
+                        if (!inPawnZone(wPawn) || conflict(wKing, wPawn, bKing))
                                 continue;
-                        counts[0] -= !bInCheck(wK, wP, bK);
-                        counts[1] -= !wInCheck(wK, wP, bK);
-                        counts[2] -= !bInCheck(wK, wP, bK) && ((kpkTable[white][ix] >> bK) & 1);
-                        counts[3] -= !wInCheck(wK, wP, bK) && ((kpkTable[black][ix] >> bK) & 1);
+                        counts[0] -= !bInCheck(wKing, wPawn, bKing);
+                        counts[1] -= !wInCheck(wKing, wPawn, bKing);
+                        counts[2] -= !bInCheck(wKing, wPawn, bKing) && ((kpkTable[white][ix] >> bKing) & 1);
+                        counts[3] -= !wInCheck(wKing, wPawn, bKing) && ((kpkTable[black][ix] >> bKing) & 1);
                 }
         }
         return !counts[0] && !counts[1] && !counts[2] && !counts[3];

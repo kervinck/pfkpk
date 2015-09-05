@@ -27,7 +27,7 @@
  *  If the table is not generated yet, this will be done
  *  automatically at the first invocation.
  */
-int kpkProbe(int side, int wK, int wP, int bK);
+int kpkProbe(int side, int wKing, int wPawn, int bKing);
 
 /*
  *  Generate the KPK table.

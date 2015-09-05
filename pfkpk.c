@@ -11,7 +11,7 @@
 #include "kpk.h"
 
 struct {
-        int side, wK, wP, bK, expected;
+        int side, wKing, wPawn, bKing, expected;
 } tests[] = {
         { 0, a1, a2, a8, 0 },
         { 0, a1, a2, h8, 1 },
@@ -74,9 +74,9 @@ int main(void)
         int ix;
         for (ix=0; tests[ix].side>=0; ix++) {
                 int result = kpkProbe(tests[ix].side,
-                                      tests[ix].wK,
-                                      tests[ix].wP,
-                                      tests[ix].bK);
+                                      tests[ix].wKing,
+                                      tests[ix].wPawn,
+                                      tests[ix].bKing);
                 if (result == tests[ix].expected)
                         nrPassed++;
         }
