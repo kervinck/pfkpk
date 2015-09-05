@@ -106,7 +106,7 @@ int kpkGenerate(void)
         for (int ix=0; ix<arrayLen(kpkTable[0]); ix++) {
                 int wKing = wKingSquare(ix), wPawn = wPawnSquare(ix);
 
-                // Positions after winning pawn promotion
+                // Positions after winning pawn promotion (we can ignore stalemate here)
                 if (rank(wPawn) == rank8 && wKing != wPawn) {
                         uint64_t lost = ~allKing(bit(wKing)) & ~bit(wKing) & ~bit(wPawn);
                         if (dist(wKing, wPawn) > 1)
