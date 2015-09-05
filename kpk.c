@@ -87,7 +87,7 @@ static const int kingSteps[] = { N+W, N, N+E, W, E, S+W, S, S+E };
 
 int kpkProbe(int side, int wK, int wP, int bK)
 {
-        if (!kpkTable[0][0]) kpkGenerate();
+        if (!kpkTable[0][1]) kpkGenerate();
 
         if (file(wP) >= 4) {
                 wK = square(7 - file(wK), rank(wK));

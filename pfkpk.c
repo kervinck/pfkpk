@@ -68,7 +68,7 @@ int main(void)
                 err = EXIT_FAILURE;
 
         /*
-         *  kpkPrope
+         *  kpkProbe
          */
         int nrPassed = 0;
         int ix;
