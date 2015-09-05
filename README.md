@@ -7,7 +7,7 @@ chess programs and provided under a 2-clause BSD-style license. See
 the file `LICENSE' for details.
 
 This implementation is quite fast because it handles the 64 possible
-black king locations superposition in all operations.
+black king locations in superposition for all operations.
 
 ```
 kpkGenerate CPU time [seconds]: 0.001579
