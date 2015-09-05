@@ -101,7 +101,7 @@ int kpkProbe(int side, int wK, int wP, int bK)
 
 int kpkGenerate(void)
 {
-        uint64_t legal[64*32];
+        uint64_t valid[64*32];
 
         // Prepare won
         for (int ix=0; ix<arrayLen(kpkTable[0]); ix++) {
@@ -115,45 +115,48 @@ int kpkGenerate(void)
                         kpkTable[black][ix] = lost;
                 }
 
-                if (inPawnZone(wP) && wK != wP) {
-                        legal[ix] = ~king64(bit(wK));
-                        if (file(wP) != fileA) legal[ix] &= ~bit(wP+N+W);
-                        if (file(wP) != fileH) legal[ix] &= ~bit(wP+N+E);
-                }
+                valid[ix] = ~king64(bit(wK));
+                if (file(wP) != fileA) valid[ix] &= ~bit(wP+N+W);
+                if (file(wP) != fileH) valid[ix] &= ~bit(wP+N+E);
         }
 
-        uint64_t changed;
+        int changed;
         do {
-                // White to move
                 for (int ix=0; ix<arrayLen(kpkTable[0]); ix++) {
                         int wK = wKsquare(ix), wP = wPsquare(ix);
+                        if (!inPawnZone(wP))
+                                continue;
 
-                        // King moves
+                        // White king moves
                         uint64_t won = 0;
                         for (int i=0; i<arrayLen(kingSteps); i++) {
                                 int to = wK + kingSteps[i];
+                                int jx = ix + (kingSteps[i] << 5);
                                 if (taxi(wK, to & 63) == 1 && to != wP)
-                                        won |= kpkTable[black][ix+(kingSteps[i]<<5)] & ~king64(bit(to));
+                                        won |= kpkTable[black][jx] & ~king64(bit(to));
                         }
-                        // Pawn moves
+                        // White pawn moves
                         if (wP+N != wK) {
                                 won |= kpkTable[black][ix+rank2-rank1] & ~bit(wP+N);
                                 if (rank(wP) == rank2 && wP+N+N != wK)
-                                        won |= kpkTable[black][ix+rank4-rank2] & ~bit(wP+N) & ~bit(wP+N+N);
+                                        won |= kpkTable[black][ix+rank4-rank2]
+                                            & ~bit(wP+N) & ~bit(wP+N+N);
                         }
-                        kpkTable[white][ix] = won & legal[ix];
+                        kpkTable[white][ix] = won & ~bit(wP);
                 }
 
-                // Black to move
                 changed = 0;
                 for (int ix=0; ix<arrayLen(kpkTable[0]); ix++) {
-                        int wK = wKsquare(ix), wP = wPsquare(ix);
+                        if (!inPawnZone(wPsquare(ix)))
+                                continue;
 
-                        uint64_t canDraw = king64(~kpkTable[white][ix]);
-                        uint64_t hasMoves = king64(legal[ix]);
+                        // Black king moves
+                        uint64_t isBad = kpkTable[white][ix] | ~valid[ix];
+                        uint64_t canDraw = king64(~isBad);
+                        uint64_t hasMoves = king64(valid[ix]);
                         uint64_t lost = hasMoves & ~canDraw;
 
-                        changed |= kpkTable[black][ix] ^ lost;
+                        changed += (kpkTable[black][ix] != lost);
                         kpkTable[black][ix] = lost;
                 }
         } while (changed);
@@ -163,19 +166,20 @@ int kpkGenerate(void)
 
 int kpkSelfCheck(void)
 {
-        int counts[] = { // As given by Steven J. Edwards (1996)
-                163328/2, 168024/2, // legal positions for each side
-                124960/2, 97604/2   // nondraw positions for each side
+        int counts[] = {                // As given by Steven J. Edwards (1996):
+                163328 / 2, 168024 / 2, // - Legal positions per side
+                124960 / 2, 97604  / 2  // - Non-draw positions per side
         };
         for (int ix=0; ix<arrayLen(kpkTable[0]); ix++) {
                 int wK = wKsquare(ix), wP = wPsquare(ix);
-                for (int bK=0; bK<boardSize; bK++)
-                        if (inPawnZone(wP) && !conflict(wK, wP, bK)) {
-                                counts[0] -= !bInCheck(wK, wP, bK);
-                                counts[1] -= !wInCheck(wK, wP, bK);
-                                counts[2] -= !bInCheck(wK, wP, bK) & (kpkTable[white][ix] >> bK);
-                                counts[3] -= !wInCheck(wK, wP, bK) & (kpkTable[black][ix] >> bK);
-                        }
+                for (int bK=0; bK<boardSize; bK++) {
+                        if (!inPawnZone(wP) || conflict(wK, wP, bK))
+                                continue;
+                        counts[0] -= !bInCheck(wK, wP, bK);
+                        counts[1] -= !wInCheck(wK, wP, bK);
+                        counts[2] -= !bInCheck(wK, wP, bK) & (kpkTable[white][ix] >> bK);
+                        counts[3] -= !wInCheck(wK, wP, bK) & (kpkTable[black][ix] >> bK);
+                }
         }
         return !counts[0] && !counts[1] && !counts[2] && !counts[3];
 }
