@@ -6,7 +6,7 @@ available through a probing function call interface. For use in
 chess programs and provided under a 2-clause BSD-style license. See
 the file `LICENSE' for details.
 
-This implementation is quite fast because it handles the superpostion
+This implementation is quite fast because it handles the superposition
 of possible black king locations per step.
 
 ```
@@ -41,7 +41,7 @@ Marcel
  *  If the table is not generated yet, this will be done
  *  automatically at the first invocation.
  */
-int kpkProbe(int side, int wK, int wP, int bK);
+int kpkProbe(int side, int wKing, int wPawn, int bKing);
 
 /*
  *  Generate the KPK table.
