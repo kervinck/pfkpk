@@ -6,8 +6,8 @@ available through a probing function call interface. For use in
 chess programs and provided under a 2-clause BSD-style license. See
 the file `LICENSE' for details.
 
-This implementation is quite fast because it handles the 64 possible
-black king locations in superposition for all operations.
+This implementation is quite fast because it handles the superpostion
+of possible black king locations per step.
 
 ```
 kpkGenerate CPU time [seconds]: 0.001579
