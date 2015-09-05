@@ -177,8 +177,8 @@ int kpkSelfCheck(void)
                                 continue;
                         counts[0] -= !bInCheck(wK, wP, bK);
                         counts[1] -= !wInCheck(wK, wP, bK);
-                        counts[2] -= !bInCheck(wK, wP, bK) & (kpkTable[white][ix] >> bK);
-                        counts[3] -= !wInCheck(wK, wP, bK) & (kpkTable[black][ix] >> bK);
+                        counts[2] -= !bInCheck(wK, wP, bK) && ((kpkTable[white][ix] >> bK) & 1);
+                        counts[3] -= !wInCheck(wK, wP, bK) && ((kpkTable[black][ix] >> bK) & 1);
                 }
         }
         return !counts[0] && !counts[1] && !counts[2] && !counts[3];
