@@ -16,12 +16,17 @@ kpkSelfCheck: OK
 kpkProbe 24/24: OK
 ```
 
-The implementation is agnostic to board geometry.  See the file
+The implementation is agnostic to board geometry. See the file
 `kpk.h' for instructions on how to adapt to an alternative square
 indexing.
 
 Distance to conversion (DTC) is not provided, but is trivial to
-add.  Please contact the author if you need advice.
+add. Please contact the author if you need advice.
+
+Tested using several combinations of
+ System   : Linux/Ubuntu 14.04, FreeBSD 9.0, Raspberry Pi, OSX 10.10.5
+ Hardware : i7-3720QM, i7-5960X, FX-8350, ARMv6, ARMv7
+ Compiler : gcc, clang
 
 Marcel
 
