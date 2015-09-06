@@ -10,10 +10,10 @@ This implementation is quite fast because it handles the superposition
 of possible black king locations per step.
 
 ```
-kpkGenerate CPU time [seconds]: 0.001579
+kpkGenerate CPU time [seconds]: 0.001582
 kpkTable size [bytes]: 32768
 kpkSelfCheck: OK
-kpkProbe 24/24: OK
+kpkProbe 26/26: OK
 ```
 
 The implementation is agnostic to board geometry. See the file
