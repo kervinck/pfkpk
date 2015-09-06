@@ -58,7 +58,7 @@ enum { N = a2-a1, S = -N, E = b1-a1, W = -E }; // Derived geometry
                                   || (file(wPawn)!=fileA && wPawn+N+W==bKing) \
                                   || (file(wPawn)!=fileH && wPawn+N+E==bKing))
 
-// Square set macros (no need to adopt these to the specific geometry)
+// Square set macros (no need to adapt these to the specific geometry)
 #define bit(i) (1ULL << (i))
 #define mask 0x0101010101010101ULL
 #define allW(set) ((set) >> 8)

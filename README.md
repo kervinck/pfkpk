@@ -38,15 +38,15 @@ Marcel
  *  The position must be legal for meaningful results.
  *  `side' is 0 for white to move and 1 for black to move.
  *
- *  If the table is not generated yet, this will be done
- *  automatically at the first invocation.
+ *  If the table has not been generated yet, this will be
+ *  done automatically at the first invocation.
  */
 int kpkProbe(int side, int wKing, int wPawn, int bKing);
 
 /*
- *  Generate the KPK table.
+ *  Explicitly generate the KPK table.
  *  Returns the memory size for info.
- *  This can take upto 2 milliseconds on a 2.6GHz Intel i7.
+ *  This can take up to 2 milliseconds on a 2.6GHz Intel i7.
  */
 int kpkGenerate(void);
 
